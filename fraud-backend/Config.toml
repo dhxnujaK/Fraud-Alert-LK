@@ -1,0 +1,55 @@
+# Fraud Detection Backend Configuration
+
+# Server Configuration
+PORT = 8080
+UPLOAD_PATH = "./uploads"
+
+# OCR Service Configuration
+# Uncomment and add your API keys to enable OCR services
+
+# Google Cloud Vision API
+# Get your API key from: https://console.cloud.google.com/apis/credentials
+# GOOGLE_VISION_API_KEY = "your_google_vision_api_key_here"
+
+# Azure Computer Vision
+# Get your keys from: https://portal.azure.com/
+# AZURE_VISION_ENDPOINT = "https://your-resource.cognitiveservices.azure.com/"
+# AZURE_VISION_KEY = "your_azure_vision_subscription_key_here"
+
+# Fraud Detection Configuration
+FRAUD_KEYWORDS = [
+    "quick money",
+    "easy money", 
+    "work from home",
+    "guaranteed income",
+    "no experience required",
+    "make money fast",
+    "urgent hiring",
+    "high salary",
+    "no interview",
+    "immediate joining",
+    "cash payment",
+    "pay first",
+    "registration fee",
+    "processing fee",
+    "advance payment",
+    "deposit required",
+    "training fee",
+    "security deposit",
+    "part time job",
+    "data entry work",
+    "copy paste work",
+    "form filling",
+    "typing work",
+    "captcha solving",
+    "network marketing",
+    "mlm",
+    "refer friends",
+    "bring people",
+    "weekly payment",
+    "daily payment",
+    "flexible timing",
+    "no target",
+    "whatsapp only",
+    "telegram contact"
+]

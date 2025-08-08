@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  fraud-backend:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - UPLOAD_PATH=./uploads
+      # Add your OCR API keys here
+      # - GOOGLE_VISION_API_KEY=your_google_api_key
+      # - AZURE_VISION_ENDPOINT=your_azure_endpoint
+      # - AZURE_VISION_KEY=your_azure_key
+    volumes:
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+
+  # Optional: Add a database for storing analysis results
+  # postgres:
+  #   image: postgres:15
+  #   environment:
+  #     POSTGRES_DB: fraud_detection
+  #     POSTGRES_USER: fraud_user
+  #     POSTGRES_PASSWORD: fraud_password
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+
+# volumes:
+#   postgres_data:

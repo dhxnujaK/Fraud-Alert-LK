@@ -1,0 +1,48 @@
+[package]
+org = "fraud_detection"
+name = "fraud_alert_backend"
+version = "1.0.0"
+distribution = "2201.10.0"
+
+[build-options]
+observabilityIncluded = true
+
+[[dependency]]
+org = "ballerina"
+name = "http"
+version = "2.12.0"
+
+[[dependency]]
+org = "ballerina"
+name = "io"
+version = "1.8.0"
+
+[[dependency]]
+org = "ballerina"
+name = "mime"
+version = "2.11.0"
+
+[[dependency]]
+org = "ballerina"
+name = "log"
+version = "2.10.0"
+
+[[dependency]]
+org = "ballerina"
+name = "os"
+version = "1.9.0"
+
+[[dependency]]
+org = "ballerina"
+name = "regex"
+version = "1.6.0"
+
+[[dependency]]
+org = "ballerina"
+name = "time"
+version = "2.6.0"
+
+[[dependency]]
+org = "ballerina"
+name = "uuid"
+version = "1.8.0"
