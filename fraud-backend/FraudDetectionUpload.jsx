@@ -154,7 +154,7 @@ const FraudDetectionUpload = () => {
                 height: '20px',
                 borderRadius: '10px',
                 transition: 'width 0.3s ease'
-              }}></div>
+              }}></div> // Progress bar for fraud score
             </div>
             <p style={{
               color: getRiskColor(result.fraudScore),
