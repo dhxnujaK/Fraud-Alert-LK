@@ -1,0 +1,2 @@
+# ML script path - adjust this to the absolute path to your classify.py script
+mlScriptPath = "../fraudML/classify.py"

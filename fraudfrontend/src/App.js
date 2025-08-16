@@ -1,23 +1,42 @@
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
+import JobForm from './components/JobForm';
+import { checkHealth } from './services/api';
 import './App.css';
 
 function App() {
+  const [backendStatus, setBackendStatus] = useState('Checking...');
+
+  useEffect(() => {
+    const checkBackendStatus = async () => {
+      try {
+        const status = await checkHealth();
+        setBackendStatus('Online');
+      } catch (error) {
+        setBackendStatus('Offline');
+        console.error('Backend appears to be offline:', error);
+      }
+    };
+    
+    checkBackendStatus();
+  }, []);
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <h1>Fraud Alert LK</h1>
+        <p className="App-subtitle">Detect fraudulent job postings using AI</p>
+        <div className={`backend-status ${backendStatus === 'Online' ? 'online' : 'offline'}`}>
+          Backend Status: {backendStatus}
+        </div>
       </header>
+      
+      <main className="App-main">
+        <JobForm />
+      </main>
+      
+      <footer className="App-footer">
+        <p>Fraud Alert LK &copy; {new Date().getFullYear()} - Powered by ML</p>
+      </footer>
     </div>
   );
 }
