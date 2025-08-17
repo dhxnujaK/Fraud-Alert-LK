@@ -1,9 +1,12 @@
-const API_URL = 'http://localhost:9090';
+const API_URL = 'http://localhost:9091';
 
 export const checkHealth = async () => {
     try {
+        console.log("Trying to connect to backend at:", `${API_URL}/health`);
         const response = await fetch(`${API_URL}/health`);
-        return await response.text();
+        const result = await response.text();
+        console.log("Health check result:", result);
+        return result;
     } catch (error) {
         console.error('Error checking API health:', error);
         throw error;

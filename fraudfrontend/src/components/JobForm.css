@@ -108,7 +108,8 @@
     border: 1px solid #28a745;
 }
 
-.confidence {
-    font-weight: 600;
-    margin-top: 10px;
+.help-text {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-top: 5px;
 }

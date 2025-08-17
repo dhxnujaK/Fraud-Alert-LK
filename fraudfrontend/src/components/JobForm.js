@@ -101,7 +101,7 @@ const JobForm = () => {
                 </div>
                 
                 <div className="form-group image-upload-group">
-                    <label htmlFor="image">Upload Job Posting Image (Optional)</label>
+                    <label htmlFor="image">Upload Job Posting Image (OCR Enabled)</label>
                     <input
                         type="file"
                         id="image"
@@ -116,6 +116,7 @@ const JobForm = () => {
                     >
                         Extract Text from Image
                     </button>
+                    {image && <p className="help-text">Click "Extract Text" to use OCR to analyze this image</p>}
                 </div>
                 
                 {error && <div className="error-message">{error}</div>}
