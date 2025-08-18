@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders learn react link', () => {
+test('renders form elements', () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  expect(screen.getByText(/Job Post URL/i)).toBeInTheDocument();
+  expect(screen.getByText(/Or Upload Image/i)).toBeInTheDocument();
 });
