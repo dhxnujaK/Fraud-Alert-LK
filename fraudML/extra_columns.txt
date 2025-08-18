@@ -1,0 +1,1 @@
+keyword_hits,has_money,num_links,has_phone,has_email,num_exclaim,upper_ratio,word_count
