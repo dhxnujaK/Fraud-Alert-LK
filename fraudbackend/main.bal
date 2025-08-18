@@ -5,26 +5,40 @@ import ballerina/log;
 import ballerina/lang.'string as strings;
 import ballerina/file;
 
-// Define API endpoints
-configurable string mlScriptPath = ?;
+// ---- Config ----
+configurable string pythonBin = "/usr/bin/python3";   // or your venv python
+configurable string mlScriptPath = ?;                 // e.g., "../fraudML/classify.py"
 configurable boolean useOcrApi = true;
-configurable string ocrScriptPath = ?;
+configurable string ocrScriptPath = ?;                // e.g., "../fraudML/extract_text.py"
 
-// Define request/response types
-public type JobPostingRequest record {
+// ---- Types ----
+public type JobPostingRequest record {|
     string title;
     string description;
     string? imageData;
-};
+|};
 
-public type FraudResponse record {
+public type FraudResponse record {|
     boolean isFraud;
     decimal confidenceScore;
     string message;
-};
+|};
+
+// Helper: pick a temp directory (TMPDIR -> /tmp)
+function getTmpDir() returns string {
+    string tmp = "/tmp";
+    string? envTmp = os:getEnv("TMPDIR");
+    if envTmp is string && envTmp.length() > 0 {
+        tmp = envTmp;
+    }
+    if tmp.endsWith("/") {
+        tmp = tmp.substring(0, tmp.length() - 1);
+    }
+    return tmp;
+}
 
 service / on new http:Listener(9091) {
-    // Enable CORS for frontend communication
+
     @http:ResourceConfig {
         cors: {
             allowOrigins: ["http://localhost:3000", "http://localhost:3001"],
@@ -39,7 +53,6 @@ service / on new http:Listener(9091) {
         return "Fraud detection service is running";
     }
 
-    // Endpoint to check job posting for fraud
     @http:ResourceConfig {
         cors: {
             allowOrigins: ["http://localhost:3000", "http://localhost:3001"],
@@ -48,20 +61,13 @@ service / on new http:Listener(9091) {
             allowMethods: ["POST", "OPTIONS", "GET"]
         }
     }
-    resource function post checkFraud(@http:Payload JobPostingRequest posting) returns FraudResponse|error {
+    resource function post checkFraud(@http:Payload JobPostingRequest posting)
+            returns FraudResponse|error {
         log:printInfo("Received request to check fraud for job posting: " + posting.title);
-        
-        // Prepare data for ML model
-        string title = posting.title;
-        string description = posting.description;
-        
-        // Call Python ML model
-        FraudResponse response = check callMLModel(title, description);
-        
+        FraudResponse response = check callMLModel(posting.title, posting.description);
         return response;
     }
-    
-    // Endpoint to handle image upload and text extraction
+
     @http:ResourceConfig {
         cors: {
             allowOrigins: ["http://localhost:3000", "http://localhost:3001"],
@@ -73,119 +79,132 @@ service / on new http:Listener(9091) {
     resource function post extractText(http:Request request) returns json|error {
         var parts = check request.getBodyParts();
         string extractedText = "";
-        
+
         foreach var part in parts {
-            if (part.getContentDisposition().name == "image") {
+            string? name = part.getContentDisposition().name;
+            if name is string && name == "image" {
                 byte[] bytes = check part.getByteArray();
-                // Here you would implement OCR or call an external OCR service
                 io:println("Received image of size: " + bytes.length().toString() + " bytes");
                 extractedText = check extractTextFromImage(bytes);
             }
         }
-        
+
         return { text: extractedText };
     }
 }
 
-// Function to call Python ML model
+// ---- ML bridge ----
 function callMLModel(string title, string description) returns FraudResponse|error {
-    // Create a temporary file with the job data
-    string tempFilePath = "./temp_job_data.txt";  // Using current directory for temp file
+    string tmp = getTmpDir();
+    string tempFilePath = tmp + "/fraudlk_temp_job_data.txt";
     string jobData = title + "\n" + description;
     check io:fileWriteString(tempFilePath, jobData);
-    
-    log:printInfo("Calling ML model with job data: " + title);
 
-    // Prepare the command for Python script execution
-    os:Process|error execResult = os:exec({
-        value: "python",
+    log:printInfo(string `Calling ML model: ${pythonBin} ${mlScriptPath} ${tempFilePath}`);
+
+    os:Process|os:Error execResult = os:exec({
+        value: pythonBin,
         arguments: [mlScriptPath, tempFilePath]
     });
-    
-    if (execResult is error) {
-        log:printError("Failed to execute ML script: " + execResult.message());
+
+    if execResult is os:Process {
+        os:Process process = execResult;
+        int exitCode = check process.waitForExit();
+
+        string result = "";
+        byte[]|os:Error outputResult = process.output();
+        if (outputResult is byte[]) {
+            string|error stringResult = strings:fromBytes(outputResult);
+            if (stringResult is string) {
+                result = stringResult;
+            } else {
+                log:printError("Failed to convert process output to string: " + stringResult.message());
+            }
+        }
+
+        // cleanup AFTER process finished
+        var delRes = file:remove(tempFilePath);
+        if delRes is error {
+            log:printError("Failed to remove temp file", 'error = delRes);
+        }
+
+        log:printInfo("ML model returned: " + result + " with exit code: " + exitCode.toString());
+
+        if (exitCode != 0) {
+            return error("ML model execution failed");
+        }
+
+        boolean isFraud = strings:trim(result) == "1";
+        return {
+            isFraud: isFraud,
+            confidenceScore: isFraud ? 0.85 : 0.98,
+            message: isFraud
+                ? "This job posting has characteristics similar to fraudulent posts."
+                : "This job posting appears to be legitimate."
+        };
+    } else {
+        // ensure cleanup even on spawn failure
+        var delRes = file:remove(tempFilePath);
+        if delRes is error {
+            log:printError("Failed to remove temp file (spawn error path)", 'error = delRes);
+        }
+        os:Error e = execResult;
+        log:printError("Failed to execute ML script: " + e.message());
         return error("Failed to process job posting");
     }
-    
-    os:Process process = execResult;
-    int exitCode = check process.waitForExit();
-    
-    // Read output from the process
-    string result = "";
-    byte[]|os:Error outputResult = process.output();
-    
-    if (outputResult is byte[]) {
-        string|error stringResult = strings:fromBytes(outputResult);
-        if (stringResult is string) {
-            result = stringResult;
-        } else {
-            log:printError("Failed to convert process output to string: " + stringResult.message());
-        }
-    }
-    
-    log:printInfo("ML model returned: " + result + " with exit code: " + exitCode.toString());
-    
-    // Clean up temporary file after processing
-    check file:remove(tempFilePath);
-    
-    if (exitCode != 0) {
-        return error("ML model execution failed");
-    }
-    
-    // Parse the result (0 = real, 1 = fraud)
-    boolean isFraud = strings:trim(result) == "1";
-    
-    return {
-        isFraud: isFraud,
-        confidenceScore: isFraud ? 0.85 : 0.98, // Using values from model_evaluation.txt
-        message: isFraud ? 
-            "This job posting has characteristics similar to fraudulent posts." : 
-            "This job posting appears to be legitimate."
-    };
 }
 
-// Function to extract text from image using OCR
+// ---- OCR bridge ----
 function extractTextFromImage(byte[] imageData) returns string|error {
-    if (!useOcrApi) {
+    if !useOcrApi {
         return "OCR is currently disabled. Please enter job details manually or enable OCR in the backend configuration.";
     }
-    
-    // Use local Tesseract OCR through Python script
-    // Save the image to a temporary file
-    string tempImagePath = "./temp_image.jpg";  // Using current directory for temp file
+
+    string tmp = getTmpDir();
+    string tempImagePath = tmp + "/fraudlk_temp_image.jpg";
     check io:fileWriteBytes(tempImagePath, imageData);
-    
-    log:printInfo("Running OCR on image saved at: " + tempImagePath);
-    
-    // Call the Python OCR script
-    os:Process|error execResult = os:exec({
-        value: "python",
+    log:printInfo("Saved image for OCR at: " + tempImagePath);
+
+    os:Process|os:Error execResult = os:exec({
+        value: pythonBin,
         arguments: [ocrScriptPath, tempImagePath]
     });
-    
-    if (execResult is error) {
-        log:printError("Failed to execute OCR script: " + execResult.message());
-        return "Failed to extract text from image. Make sure Tesseract OCR is installed and Python dependencies are set up.";
-    }
-    
-    os:Process process = execResult;
-    int exitCode = check process.waitForExit();
-    
-    // Read output from the process
-    string extractedText = "";
-    byte[]|os:Error outputResult = process.output();
-    
-    if (outputResult is byte[]) {
-        string|error stringResult = strings:fromBytes(outputResult);
-        if (stringResult is string) {
-            extractedText = stringResult;
-        } else {
-            log:printError("Failed to convert process output to string: " + stringResult.message());
+
+    if execResult is os:Process {
+        os:Process process = execResult;
+        int exitCode = check process.waitForExit();
+
+        string extractedText = "";
+        byte[]|os:Error outputResult = process.output();
+        if (outputResult is byte[]) {
+            string|error stringResult = strings:fromBytes(outputResult);
+            if (stringResult is string) {
+                extractedText = stringResult;
+            } else {
+                log:printError("Failed to convert OCR output to string: " + stringResult.message());
+            }
         }
+
+        // cleanup AFTER process finished
+        var delRes = file:remove(tempImagePath);
+        if delRes is error {
+            log:printError("Failed to remove temp image", 'error = delRes);
+        }
+
+        if (exitCode != 0) {
+            log:printError("OCR script failed with exit code: " + exitCode.toString());
+            return "Failed to extract text from image. Make sure Python/Tesseract and dependencies are installed.";
+        }
+
+        return extractedText;
+    } else {
+        // ensure cleanup even on spawn failure
+        var delRes = file:remove(tempImagePath);
+        if delRes is error {
+            log:printError("Failed to remove temp image (spawn error path)", 'error = delRes);
+        }
+        os:Error e = execResult;
+        log:printError("Failed to execute OCR script: " + e.message());
+        return "Failed to extract text from image. Cannot start Python process.";
     }
-    
-    // Clean up temporary file
-    check file:remove(tempImagePath);
-    
-    return extractedText;
 }

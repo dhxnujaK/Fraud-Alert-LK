@@ -1,8 +1,4 @@
-# ML script path - adjust this to the absolute path to your classify.py script
-mlScriptPath = "c:/Users/bumee/Downloads/Fraud-Alert-LK/fraudML/classify.py"
-
-# OCR Configuration
-# Enable OCR functionality (set to true if you want to use OCR)
+pythonBin = "/Users/dhanujakahatapitiya/Library/CloudStorage/OneDrive-engug.ruh.ac.lk/University/Competitions/fraudlk/Fraud-Alert-LK/fraudbackend/venv/bin/python3"
+mlScriptPath = "../fraudML/classify.py"
+ocrScriptPath = "../fraudML/extract_text.py"
 useOcrApi = true
-# Path to local OCR script (Tesseract)
-ocrScriptPath = "c:/Users/bumee/Downloads/Fraud-Alert-LK/fraudML/extract_text.py"
