@@ -15,7 +15,7 @@ configurable string ocrScriptPath = ?;                // e.g., "../fraudML/extra
 public type JobPostingRequest record {|
     string title;
     string description;
-    string? imageData;
+    string imageData?;
 |};
 
 public type FraudResponse record {|
@@ -43,13 +43,11 @@ service / on new http:Listener(9091) {
         cors: {
             allowOrigins: ["http://localhost:3000", "http://localhost:3001"],
             allowCredentials: true,
-            allowHeaders: ["*"],
-            allowMethods: ["GET", "OPTIONS"]
+            allowHeaders: ["content-type", "authorization", "*"],
+            allowMethods: ["GET", "POST", "OPTIONS"]
         }
     }
     resource function get health() returns string {
-        io:println("Health check endpoint called");
-        log:printInfo("Health check endpoint called");
         return "Fraud detection service is running";
     }
 
@@ -57,23 +55,20 @@ service / on new http:Listener(9091) {
         cors: {
             allowOrigins: ["http://localhost:3000", "http://localhost:3001"],
             allowCredentials: true,
-            allowHeaders: ["*"],
-            allowMethods: ["POST", "OPTIONS", "GET"]
+            allowHeaders: ["content-type", "authorization", "*"],
+            allowMethods: ["GET", "POST", "OPTIONS"]
         }
     }
-    resource function post checkFraud(@http:Payload JobPostingRequest posting)
-            returns FraudResponse|error {
-        log:printInfo("Received request to check fraud for job posting: " + posting.title);
-        FraudResponse response = check callMLModel(posting.title, posting.description);
-        return response;
+    resource function post checkFraud(@http:Payload JobPostingRequest posting) returns FraudResponse|error {
+        return check callMLModel(posting.title, posting.description);
     }
 
     @http:ResourceConfig {
         cors: {
             allowOrigins: ["http://localhost:3000", "http://localhost:3001"],
             allowCredentials: true,
-            allowHeaders: ["*"],
-            allowMethods: ["POST", "OPTIONS", "GET"]
+            allowHeaders: ["content-type", "authorization", "*"],
+            allowMethods: ["GET", "POST", "OPTIONS"]
         }
     }
     resource function post extractText(http:Request request) returns json|error {
@@ -81,14 +76,11 @@ service / on new http:Listener(9091) {
         string extractedText = "";
 
         foreach var part in parts {
-            string? name = part.getContentDisposition().name;
-            if name is string && name == "image" {
+            if part.getContentDisposition().name == "image" {
                 byte[] bytes = check part.getByteArray();
-                io:println("Received image of size: " + bytes.length().toString() + " bytes");
                 extractedText = check extractTextFromImage(bytes);
             }
         }
-
         return { text: extractedText };
     }
 }
