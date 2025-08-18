@@ -25,15 +25,16 @@ service / on new http:Listener(8080) {
         string|error? img = payload.imageBase64?.toString();
 
         string key;
+        string pythonCmd = os:getEnv("PYTHON_CMD") ?: "python3";
         string[] args;
         if url is string && url.trim().length() > 0 {
             key = url;
-            args = ["python3","fraudML/process.py","--url",url];
+            args = [pythonCmd, "fraudML/process.py", "--url", url];
         } else if img is string && img.trim().length() > 0 {
             key = img;
-            args = ["python3","fraudML/process.py","--image",img];
+            args = [pythonCmd, "fraudML/process.py", "--image", img];
         } else {
-            return {"error":"No input provided"};
+            return {"error": "No input provided"};
         }
 
         string hash = crypto:hashMd5Hex(key.toBytes());
@@ -43,12 +44,18 @@ service / on new http:Listener(8080) {
             return cached;
         }
 
-        var process = os:exec(args);
-        if process.exitCode != 0 {
-            io:println(process.stderr);
-            return {"error":"Processing failed"};
+        var execResult = os:exec(args);
+        json output;
+        if execResult is os:Process {
+            if execResult.exitCode != 0 {
+                io:println(execResult.stderr);
+                return {"error": "Processing failed"};
+            }
+            output = check jsonutils:fromString(execResult.stdout);
+        } else {
+            io:println(execResult.toString());
+            return {"error": "Python executable not found"};
         }
-        json output = check jsonutils:fromString(process.stdout);
         results[hash] = output;
         saveResults(results);
         return output;
