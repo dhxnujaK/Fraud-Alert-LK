@@ -2,7 +2,6 @@ import ballerina/http;
 import ballerina/io;
 import ballerina/crypto;
 import ballerina/file;
-import ballerina/encoding;
 import ballerina/lang.'json as jsonutils;
 import ballerina/os;
 
@@ -10,15 +9,13 @@ const string DATA_FILE = "backend/results.json";
 
 function loadResults() returns json {
     if file:exists(DATA_FILE) {
-        string content = check io:fileReadString(DATA_FILE);
-        return check jsonutils:fromString(content);
+        return check io:fileReadJson(DATA_FILE);
     }
     return {};
 }
 
 function saveResults(json j) {
-    string content = j.toJsonString();
-    checkpanic io:fileWriteString(DATA_FILE, content);
+    checkpanic io:fileWriteJson(DATA_FILE, j);
 }
 
 service / on new http:Listener(8080) {
@@ -39,7 +36,7 @@ service / on new http:Listener(8080) {
             return {"error":"No input provided"};
         }
 
-        string hash = encoding:hexEncode(crypto:hashMd5(key.toBytes()));
+        string hash = crypto:hashMd5Hex(key.toBytes());
         json results = loadResults();
         var cached = results[hash];
         if cached is json {
