@@ -8,7 +8,7 @@ A full-stack web application built with **React, Ballerina, and Python ML**, des
 ## 🎯 Project Objective
 
 * ✅ Detect and classify scam vs legitimate job posts
-* ✅ Support **image upload**, **URL input**, and **text entry**
+* ✅ Support **image upload** and **text entry**
 * ✅ Demonstrate ML pipeline integration with caching & database
 * ✅ Provide an efficient, user-friendly system
 
@@ -17,7 +17,6 @@ A full-stack web application built with **React, Ballerina, and Python ML**, des
 ## 🧠 Core Concepts Covered
 
 * 📸 **OCR Integration**: Extract text from uploaded job screenshots
-* 🌐 **Web Extraction**: Scrape/parse job text from URLs
 * 🤖 **Machine Learning**: Train & deploy a fraud detection model (Logistic Regression / RoBERTa)
 * ⚡ **Database & Caching**: Store results and avoid duplicate ML runs
 * 🔗 **Full-stack Integration**: React (UI) ↔ Ballerina (backend) ↔ Python (ML)
@@ -26,25 +25,25 @@ A full-stack web application built with **React, Ballerina, and Python ML**, des
 
 ## 🖥️ Application Modules
 
-### 1. 🖼️ Frontend (Bipuli)
+### 1. 🖼️ Frontend
 
 * Developed with **React**
 * Features:
 
   * Upload job ad images
-  * Enter job posting URLs
+  * Enter Texts
   * Display fraud/legit result with confidence score
 
-### 2. ⚙️ Backend Integration (Bumeega)
+### 2. ⚙️ Backend Integration
 
 * Developed in **Ballerina**
 * Responsibilities:
 
   * Accept input from frontend
-  * Handle OCR (images) and scraping (URLs)
+  * Handle OCR (images) 
   * Communicate with ML service and return results
 
-### 3. 🤖 Machine Learning Service (Dhanuja)
+### 3. 🤖 Machine Learning Service 
 
 * Built in **Python** with **scikit-learn / transformers**
 * Responsibilities:
@@ -54,7 +53,7 @@ A full-stack web application built with **React, Ballerina, and Python ML**, des
   * Expose **/predict** REST API (Flask/FastAPI)
   * Return JSON output with result + confidence
 
-### 4. 🗃️ Database & Caching (Netmini)
+### 4. 🗃️ Database & Caching
 
 * Stores all job entries and results 
 * On repeated submissions, returns cached results instead of rerunning ML
@@ -67,7 +66,7 @@ A full-stack web application built with **React, Ballerina, and Python ML**, des
 * **Frontend**: React, Axios
 * **Backend**: Ballerina (HTTP Services)
 * **ML Service**: Python (Flask / FastAPI, scikit-learn, transformers)
-* **OCR & Extraction**: Tesseract OCR, web scraping libraries
+* **OCR & Extraction**: Tesseract OCR
 * **Database**: MySQL 
 
 ---
@@ -79,8 +78,6 @@ A full-stack web application built with **React, Ballerina, and Python ML**, des
 ├── frontend/              # React frontend
 ├── backend/               # Ballerina backend (HTTP services, cache logic)
 ├── fraudML/               # Python ML model + API
-├── db/                    # Database schema & migrations
-├── scripts/               # Utility scripts (dev/build)
 └── README.md
 ```
 
@@ -91,7 +88,7 @@ A full-stack web application built with **React, Ballerina, and Python ML**, des
 * **Dhanuja Kahatapitiya** 
 * **Nethmini Herath** 
 * **Bipuli Wanniarachchi** 
-* **Bumeega Vikurananda** 
+* **Bumeega Vikurandha** 
 
 ---
 
