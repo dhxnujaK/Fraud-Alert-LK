@@ -8,6 +8,7 @@ const JobForm = () => {
         description: '',
     });
     const [image, setImage] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -22,7 +23,25 @@ const JobForm = () => {
 
     const handleImageChange = (e) => {
         if (e.target.files && e.target.files[0]) {
-            setImage(e.target.files[0]);
+            const file = e.target.files[0];
+            setImage(file);
+            
+            // Create preview URL
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const removeImage = () => {
+        setImage(null);
+        setImagePreview(null);
+        // Reset the file input
+        const fileInput = document.getElementById('image');
+        if (fileInput) {
+            fileInput.value = '';
         }
     };
 
@@ -74,7 +93,7 @@ const JobForm = () => {
         <div className="job-form-container">
             <h2>Job Posting Fraud Checker</h2>
             <form onSubmit={handleSubmit} className="job-form">
-                <div className="form-group">
+                {/* <div className="form-group">
                     <label htmlFor="title">Job Title</label>
                     <input
                         type="text"
@@ -85,7 +104,7 @@ const JobForm = () => {
                         required
                         placeholder="Enter job title"
                     />
-                </div>
+                </div> */}
                 
                 <div className="form-group">
                     <label htmlFor="description">Job Description</label>
@@ -100,23 +119,58 @@ const JobForm = () => {
                     />
                 </div>
                 
-                <div className="form-group image-upload-group">
-                    <label htmlFor="image">Upload Job Posting Image (OCR Enabled)</label>
-                    <input
-                        type="file"
-                        id="image"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                    />
-                    <button 
-                        type="button" 
-                        onClick={handleExtractText}
-                        disabled={!image || loading}
-                        className="extract-button"
-                    >
-                        Extract Text from Image
-                    </button>
-                    {image && <p className="help-text">Click "Extract Text" to use OCR to analyze this image</p>}
+                <div className="form-group image-upload-section">
+                    <label className="upload-section-title">Upload Job Posting Image</label>
+                    <p className="upload-description">Upload an image to extract text using OCR technology</p>
+                    
+                    <div className="image-upload-container">
+                        {!imagePreview ? (
+                            <div className="upload-dropzone">
+                                <div className="upload-icon">📁</div>
+                                <p className="upload-text">Click to upload or drag and drop</p>
+                                <p className="upload-subtext">PNG, JPG, JPEG up to 10MB</p>
+                                <input
+                                    type="file"
+                                    id="image"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="file-input"
+                                />
+                            </div>
+                        ) : (
+                            <div className="image-preview-container">
+                                <div className="image-preview">
+                                    <img src={imagePreview} alt="Upload preview" />
+                                    <button 
+                                        type="button"
+                                        onClick={removeImage}
+                                        className="remove-image-btn"
+                                        title="Remove image"
+                                    >
+                                        ❌
+                                    </button>
+                                </div>
+                                <div className="image-info">
+                                    <p className="image-name">📄 {image?.name}</p>
+                                    <p className="image-size">📊 {(image?.size / 1024 / 1024).toFixed(2)} MB</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    
+                    {image && (
+                        <div className="extract-section">
+                            <button 
+                                type="button" 
+                                onClick={handleExtractText}
+                                disabled={loading}
+                                className="extract-button"
+                            >
+                                {loading ? 'Extracting...' : ' Extract Text from Image'}
+                            </button>
+                            <p className="help-text"> AI will automatically extract and analyze text from your image</p>
+                        </div>
+                    )}
                 </div>
                 
                 {error && <div className="error-message">{error}</div>}
