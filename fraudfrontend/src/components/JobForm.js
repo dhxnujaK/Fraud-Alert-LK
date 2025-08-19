@@ -121,7 +121,6 @@ const JobForm = () => {
                 
                 <div className="form-group image-upload-section">
                     <label className="upload-section-title">Upload Job Posting Image</label>
-                    <p className="upload-description">Upload an image to extract text using OCR technology</p>
                     
                     <div className="image-upload-container">
                         {!imagePreview ? (
@@ -168,7 +167,7 @@ const JobForm = () => {
                             >
                                 {loading ? 'Extracting...' : ' Extract Text from Image'}
                             </button>
-                            <p className="help-text"> AI will automatically extract and analyze text from your image</p>
+                        
                         </div>
                     )}
                 </div>
