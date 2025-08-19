@@ -1,4 +1,4 @@
-pythonBin = "/Users/dhanujakahatapitiya/Library/CloudStorage/OneDrive-engug.ruh.ac.lk/University/Competitions/fraudlk/Fraud-Alert-LK/fraudbackend/venv/bin/python3"
+pythonBin = "fraudbackend/venv/bin/python3"
 mlScriptPath = "../fraudML/classify.py"
 ocrScriptPath = "../fraudML/extract_text.py"
 useOcrApi = true
