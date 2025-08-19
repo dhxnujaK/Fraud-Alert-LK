@@ -2,3 +2,9 @@ pythonBin = "/Users/dhanujakahatapitiya/Library/CloudStorage/OneDrive-engug.ruh.
 mlScriptPath = "../fraudML/classify.py"
 ocrScriptPath = "../fraudML/extract_text.py"
 useOcrApi = true
+
+dbHost = "127.0.0.1"
+dbUser = "root"
+dbPassword = "dhanujaK@3036921"
+dbName = "job_fraud_db"
+dbPort = 3306
