@@ -6,7 +6,7 @@ useOcrApi = true
 
 dbHost = "127.0.0.1"
 dbUser = "root"
-dbPassword = "dhanujaK@3036921"
+dbPassword = "Enter your password"
 dbName = "job_fraud_db"
 dbPort = 3306
 
