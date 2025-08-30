@@ -1,4 +1,3 @@
-# classify.py
 import sys
 import re
 import joblib
@@ -8,27 +7,21 @@ import os
 from nltk.corpus import stopwords
 from scipy.sparse import hstack, csr_matrix
 
-# --------------------------
-# Threshold (fallback 0.50)
-# --------------------------
+# Threshold (default 0.50 if file not found)
 try:
     with open("threshold.txt") as f:
         THRESHOLD = float(f.read().strip())
 except Exception:
     THRESHOLD = 0.50
 
-# --------------------------
 # NLTK stopwords
-# --------------------------
 try:
     nltk.data.find('corpora/stopwords')
 except LookupError:
     nltk.download("stopwords", quiet=True)
 stop_words = set(stopwords.words("english"))
 
-# --------------------------
-# Scam keywords (fallback)
-# --------------------------
+# Scam keywords (fallback list if file not found)
 try:
     with open("scam_keywords.txt") as f:
         SCAM_KEYWORDS = [line.strip().lower() for line in f if line.strip()]
@@ -40,20 +33,17 @@ except Exception:
         "daily payout","be your own boss"
     ]
 
-# The engineered feature columns (length must be 8)
+# Engineered feature columns
 EXTRA_COLS = [
     "keyword_hits","has_money","num_links","has_phone",
     "has_email","num_exclaim","upper_ratio","word_count"
 ]
 
-# Load model + vectorizer from this directory (robust to CWD)
+# Load model and vectorizer
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 model = joblib.load(os.path.join(SCRIPT_DIR, "fraud_model.pkl"))
 vectorizer = joblib.load(os.path.join(SCRIPT_DIR, "tfidf_vectorizer.pkl"))
 
-# --------------------------
-# Helpers
-# --------------------------
 def clean_text(text: str) -> str:
     text = text.lower()
     text = re.sub(r"http\S+|www\.\S+", "", text)
@@ -85,50 +75,37 @@ def extra_features(raw_text: str):
     }
 
 def model_expected_features(m):
-    # Try scikit-learn's attribute
     n = getattr(m, "n_features_in_", None)
     if isinstance(n, (int, np.integer)) and n > 0:
         return int(n)
-    # Try xgboost booster
     try:
         booster = m.get_booster()
         n2 = booster.num_features()
-        if isinstance(n2, (int, np.integer)):  # xgboost returns int
+        if isinstance(n2, (int, np.integer)):
             return int(n2)
-        # some versions return str
         return int(str(n2))
     except Exception:
         pass
-    return None  # unknown
+    return None
 
 def predict_label(title: str, description: str) -> int:
     raw_text = f"{title} {description}"
-
-    # TF-IDF
     cleaned = clean_text(raw_text)
     X_text = vectorizer.transform([cleaned])
     vec_dim = X_text.shape[1]
 
-    # What does the model expect?
     expected = model_expected_features(model)
-
-    # By default, try to match training setup:
-    # if expected == vec_dim + 8 -> add engineered features
-    # if expected == vec_dim     -> use TF-IDF only
-    # if unknown -> try TF-IDF + engineered features first
     X_input = X_text
-
     need_extra = False
+
     if expected is not None:
         if expected == vec_dim + len(EXTRA_COLS):
             need_extra = True
         elif expected == vec_dim:
             need_extra = False
         else:
-            # model expects something else; best effort: if smaller than vec_dim+8, try TF-IDF only
             need_extra = (expected > vec_dim)
     else:
-        # Unknown expected size: prefer adding engineered features (matches your training)
         need_extra = True
 
     if need_extra:
@@ -141,13 +118,8 @@ def predict_label(title: str, description: str) -> int:
     pred = int(prob >= THRESHOLD)
     return pred
 
-# --------------------------
-# CLI entry
-# --------------------------
 if __name__ == "__main__":
     try:
-        # Accept either: classify.py <input_file>
-        #            or: classify.py "<title>" "<description>"
         if len(sys.argv) == 2:
             input_file = sys.argv[1]
             with open(input_file, 'r', encoding='utf-8', errors='ignore') as f:
@@ -158,14 +130,13 @@ if __name__ == "__main__":
             title = sys.argv[1]
             description = sys.argv[2]
         else:
-            print("1")  # be conservative on bad usage
+            print("1")
             sys.exit(0)
 
         result = predict_label(title, description)
-        print(result)  # IMPORTANT: only '0' or '1'
+        print(result)  # only '0' or '1'
         sys.exit(0)
     except Exception as e:
-        # Send details to stderr for backend logs; stdout must stay parseable
         print(f"Error: {e}", file=sys.stderr)
-        print("1")  # conservative default: treat as fraud on error
+        print("1")
         sys.exit(0)
