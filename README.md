@@ -29,12 +29,6 @@ With a caching and database layer powered by Ballerina and MySQL, repeated scam 
 
 ## 📂 Project Structure
 
-fraud-alert-lk/
-  fraudbackend/      - Ballerina backend
-  fraudfrontend/     - React frontend
-  fraudML/           - Python ML model (classify + OCR)
-  README.md
-
 📦 Fraud-Alert-LK
 ├── fraudbackend/      - Ballerina backend
 ├── fraudfrontend/     - React frontend
@@ -75,6 +69,7 @@ Before running the backend, update the config file with your environment:
 
 
 #### --- DB config (set your own password) ---
+
 dbHost = "127.0.0.1"
 dbUser = "root"
 dbPassword = "YOUR_PASSWORD_HERE"
