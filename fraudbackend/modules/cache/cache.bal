@@ -13,13 +13,11 @@ public isolated class CacheService {
         self.db = dbClient;
     }
 
-    // SHA-256 -> 64-char lowercase hex
     public function generateHash(string input) returns string {
         byte[] digest = crypto:hashSha256(input.toBytes());
-        return self.toHex(digest); // <- use self.
+        return self.toHex(digest); 
     }
 
-    // helper: bytes -> hex string
     function toHex(byte[] bytes) returns string {
         string s = "";
         string[] HEX = ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f"];

@@ -1,12 +1,12 @@
 
-pythonBin   = "/Users/dhanujakahatapitiya/Library/CloudStorage/OneDrive-engug.ruh.ac.lk/University/Competitions/fraudlk/Fraud-Alert-LK/fraudbackend/venv/bin/python3"
-mlScriptPath = "/Users/dhanujakahatapitiya/Library/CloudStorage/OneDrive-engug.ruh.ac.lk/University/Competitions/fraudlk/Fraud-Alert-LK/fraudML/classify.py"
-ocrScriptPath = "/Users/dhanujakahatapitiya/Library/CloudStorage/OneDrive-engug.ruh.ac.lk/University/Competitions/fraudlk/Fraud-Alert-LK/fraudML/extract_text.py"
+pythonBin = "./fraudbackend/venv/bin/python3"
+mlScriptPath = "./fraudML/classify.py"
+ocrScriptPath = "./fraudML/extract_text.py"
 useOcrApi = true
 
 dbHost = "127.0.0.1"
 dbUser = "root"
-dbPassword = "Enter your password"
+dbPassword = "Enter Your mysql password here"
 dbName = "job_fraud_db"
 dbPort = 3306
 
