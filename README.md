@@ -35,6 +35,12 @@ fraud-alert-lk/
   fraudML/           - Python ML model (classify + OCR)
   README.md
 
+📦 Fraud-Alert-LK
+├── fraudbackend/      - Ballerina backend
+├── fraudfrontend/     - React frontend
+├── fraudML/           - Python ML model (classify + OCR)
+└── README.md
+
 ---
 
 ## ⚙️ Installation & Running the Project
@@ -68,7 +74,7 @@ CREATE TABLE IF NOT EXISTS job_posts (
 Before running the backend, update the config file with your environment:
 
 
-# --- DB config (set your own password) ---
+#### --- DB config (set your own password) ---
 dbHost = "127.0.0.1"
 dbUser = "root"
 dbPassword = "YOUR_PASSWORD_HERE"
